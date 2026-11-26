@@ -40,6 +40,7 @@ references/
   09_troubleshooting.md      故障树（本项目踩过的坑）
   10_gui_anchors.md          界面路径速查（v11 本机实测）
   11_key_editing.md          直接改 KEY 的规则（定宽格式、MOVCTL/URZ、BCCDEF 禁区）
+  12_assisted_gui.md         让 AI 代操作界面：截图→OCR→点击→复验
 scripts/
   preflight_stl.py           几何预检：编码/面数/水密/包围盒/体积
   read_key_unit.py           单位制判定（SI / English）
