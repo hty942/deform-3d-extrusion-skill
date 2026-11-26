@@ -44,6 +44,8 @@ python scripts/preflight_stl.py <几何目录>
 
 **产出**：`<name>.KEY`（Pre 保存时生成）。
 
+> 注：DEFORM V14.0 起有 Python 版 DEFORM-API，可用脚本完成部分导入/设置；v11 没有，只能按上面手动做。
+
 ---
 
 ## P2 划网格

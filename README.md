@@ -10,6 +10,12 @@
 
 DEFORM v11 **没有建模 API**：新建算例、导几何、划网格、设边界条件只能在 Pre 图形界面里点。任何声称「丢一个 STL 进去就全自动出结果」的脚本，要么在骗人，要么是在做屏幕点击机器人（分辨率一变就废）。
 
+> **版本补充（2026-11 核实）**：SFTC 自 **DEFORM V14.0** 起提供 **Python 版 DEFORM-API**，官方称已把"大部分核心功能"开放给 Python，明确可用于
+> "link DEFORM with CAD systems to automate the generation of simulation-ready geometries and meshes"、
+> 参数化建模、自定义后处理变量和结果自动提取；相关工具与文档放在 DEFORM 安装目录。
+> 本仓库针对 **v11**，没有使用该 API；如果你用的是 V14 及以上，本文档里 L2 的人工建模环节可以改成 API 调用，
+> L0 的求解/提取/报告流程仍然适用。（来源：DEFORM News, Spring 2025, "DEFORM-API for Python"）
+
 所以本仓库按 **L0～L3 三档**组织：
 
 | 档位 | 内容 | 谁来做 |
