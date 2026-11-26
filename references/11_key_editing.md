@@ -1,0 +1,61 @@
+# 直接改 KEY 的规则（参数研究用）
+
+> KEY 是**定宽格式**文本。一次重排、一次科学计数法位数变化，都可能让 DEFORM 解析错乱。
+> 本节只写本机实测过的改法；没验证过的参数，回 GUI 改完再导出，不要手改。
+
+## 1. 原则
+
+1. **保持字段宽度**。每个数值原来占多少列，改完还占多少列。
+2. **保持指数三位**：`4.6E+002`，不是 `4.6E+02`。写成两位指数 DEFORM 会读错。
+3. 改完先 `Database Generation → Check Data`，再生成 DB；不要直接拿去求解。
+4. 改之前备份原 KEY。
+
+## 2. 已实测可改：杆速（MOVCTL + URZ 一起改）
+
+挤压杆速度在 `MOVCTL` 里，单位 mm/s：
+
+```
+MOVCTL  4  ...  -4.0000000E+000 ...
+```
+
+把 4 改成 3.5 时，**只改 MOVCTL 是不够的**：坯料初始速度场 `URZ` 块里每个节点的 vx/vy/vz 也要按同一比例（3.5/4 = 0.875）缩放，否则初始场与运动边界不一致，第一步就报接触/收敛问题。
+
+`URZ` 每行 4 个数：节点号 + vx + vy + vz。改写时保持每列宽度不变。
+
+## 3. 绝不能改：BCCDEF 里的接触记录
+
+本模型的 `ale_initial.KEY` 里，object 1 的 `BCCDEF` 是逐节点的定值记录；code 4 且值为 −4 的 95 个节点就是坯料顶面（z = 475.64）。
+
+**改这个 −4，Generate DB 会直接拒绝**：
+
+```
+Workpiece (Object 1) needs to have a contact with the primary die (Object 4)
+```
+
+所以：改杆速 → 只改 MOVCTL + 缩放 URZ，BCCDEF 原样保留。
+
+## 4. 建议回 GUI 改的参数
+
+| 参数 | 原因 |
+|---|---|
+| 温度（坯料/模具/环境） | 分布在多个块，改错一处就会不自洽 |
+| 摩擦系数 | 在对象间关系里，按对象对存储 |
+| 步长 / 总步数 / 存库间隔 | 与求解控制块耦合 |
+| 材料 | 整块 `FSTRES` 数据，回 GUI 载入最稳 |
+
+做法：GUI 里改 → `Database Generation` 前先 `Save` KEY → 用新 KEY 建算例。
+
+## 5. 校验改动的笨办法（有效）
+
+1. 改动前后各导出一次 KEY（`export_db_key.ps1`）。
+2. `fc /n old.KEY new.KEY`（或 git diff）只看差异行，确认**只有预期的那几行变了**。
+3. 差异行数对不上 → 回滚重来。
+
+## 6. 批处理参数研究的推荐流程
+
+```
+复制算例目录 → 改 KEY（脚本/文本替换）→ Check Data → Generate DB（GUI 一次）
+→ run_batch.ps1 → export_db_key.ps1 → key_metrics.py → make_report.py
+```
+
+`Generate DB` 需要 GUI 是 v11 的限制；可以一次把多个算例的 DB 都生成好，再统一批跑。
