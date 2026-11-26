@@ -23,7 +23,7 @@
 
 - `DEF_ARM.COM` 在算例目录里找不到 **`64bit.dat`** 时，会打印 `Running 32bit simulation` 并在 1 秒内退出（日志里 FEM MESSAGE 为空）。
 - 解决：在算例目录建一个**空文件** `64bit.dat`。
-- GUI 路径对应 `Run Option → Machine = 64 bit`；F9 会沿用上次的设置，日志里核对 `Running 64bit simulation`。
+- GUI 路径对应 `Run Option → Machine = 64 bit`；F9 使用 Run Option 里保存的机器设置（本次实测为 64 bit），**以日志里的 `Running 64bit simulation` 为准**，不要只信界面。
 
 ## 4. 监控
 

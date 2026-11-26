@@ -91,20 +91,28 @@ python scripts/make_report.py -i baseline.json c10_metrics.json -o report.html
 - Windows 11，DEFORM-3D v11.0，安装于 `D:\Program Files\SFTC\DEFORM\v11.0`
 - 求解器 `3D\DEF_SIM_64.EXE`，批处理入口 `3D\DEF_ARM.COM`，必须存在 `64bit.dat` 才走 64 位
 - Python 3.10+（脚本只用标准库）；视频合成需 ffmpeg
+- 本机若没有 `python` 命令（Cherry 托管环境常见），把命令里的 `python` 换成
+  `uv run --no-project --python 3.12 python`，或先 `uv python install`
 - 本仓库所有脚本的「实测」结论均来自 423002 四孔模挤压算例（见 `examples/423002/`）
 
 ---
 
 ## 五、案例：423002 四孔模挤压（本仓库的验证对象）
 
-| 指标 | 稳态 ALE（dof_c1） | 说明 |
+**项目记录（4 mm/s 基准，出口截面口径）**：
+
+| 指标 | 数值 | 说明 |
 |---|---|---|
 | 单元 / 节点 | 613 704 / 137 614 | 四面体 |
 | 杆速 | 4 mm/s | 出口理论速度 112.945 mm/s |
 | 出口速度均值 | 113.33 mm/s | 与理论值偏差 0.34% |
-| 孔间差（初版） | 10.36% | 改分区工作带后 7.81% |
+| 孔间差 | 10.36% | 改 3/4/5 分区工作带后 7.81% |
 | 出口速度 CV | 30.89% → 24.82% | 同上 |
 | 挤压力 | 5.176 → 5.769 MN | 截面应力积分口径（与 DEFORM 载荷口径 5.754 不同，勿混用） |
+
+**本仓库可复现的示例（`examples/423002/`）**：dof_c1，杆速 **3 mm/s**，截面取 z = −10（工作带内），
+由 `key_metrics.py` 从 284 MB 导出 KEY 计算：出口截面速度均值 99.74 mm/s、孔间差 10.00%。
+与上表口径不同（速度、截面位置都不一样），**不要混用**；详见该目录 README。
 
 瞬态动画版（含传热）：`tr.DB` 15 帧，行程 2.42 mm，温度 455～472 °C；受模口网格限制无法跑长行程，原因与改法见 `references/02_meshing.md`。
 

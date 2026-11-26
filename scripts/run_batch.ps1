@@ -62,12 +62,16 @@ while (-not $p.HasExited) {
     if ($m) { $step = $m.Matches[0].Groups[1].Value }
   }
   $stroke = ""
+  $simTime = ""
   if (Test-Path $log) {
-    $s = Select-String -Path $log -Pattern "STROKE\s*=\s*([-0-9.E+]+)" -ErrorAction SilentlyContinue |
+    $s = Select-String -Path $log -Pattern "UPDATED TIME/STROKE\s*=\s*([-0-9.E+]+)\s+([-0-9.E+]+)" -ErrorAction SilentlyContinue |
          Select-Object -Last 1
-    if ($s) { $stroke = $s.Matches[0].Groups[1].Value }
+    if ($s) {
+      $simTime = $s.Matches[0].Groups[1].Value
+      $stroke = $s.Matches[0].Groups[2].Value
+    }
   }
-  Write-Host ("[{0:HH:mm:ss}] PID {1} alive  step={2}  stroke={3}" -f (Get-Date), $p.Id, $step, $stroke)
+  Write-Host ("[{0:HH:mm:ss}] PID {1} alive  step={2}  time={3}  stroke={4}" -f (Get-Date), $p.Id, $step, $simTime, $stroke)
 }
 
 Write-Host "finished with exit code $($p.ExitCode)"

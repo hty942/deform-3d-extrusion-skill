@@ -51,14 +51,14 @@ if ($firstName -match '(\d+)') {
 $inputName = [regex]::Replace($firstName, '\d+', '%04d')
 $inputPattern = Join-Path $dir $inputName
 
-$args = @("-y", "-framerate", "$Fps", "-start_number", "$start", "-i", $inputPattern)
+$ffArgs = @("-y", "-framerate", "$Fps", "-start_number", "$start", "-i", $inputPattern)
 if ($Gif) {
-  $args += @("-vf", "scale=iw:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse", "-loop", "0")
+  $ffArgs += @("-vf", "scale=iw:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse", "-loop", "0")
 } else {
-  $args += @("-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20")
+  $ffArgs += @("-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20")
 }
-$args += $Out
+$ffArgs += $Out
 
-& $Ffmpeg @args
+& $Ffmpeg @ffArgs
 if ($LASTEXITCODE -ne 0) { throw "ffmpeg failed with exit code $LASTEXITCODE" }
 Write-Host "written $Out"

@@ -121,14 +121,16 @@ tr.base td{{background:#f6fbff}}
                     parts.append("<td>—</td>")
                     continue
                 d = (v - b) / b * 100.0
-                if abs(d) < 0.005:
-                    cls = "flat"
-                else:
+                # Only metrics with an unambiguous better direction get red/green.
+                # (Lower force/temperature is not automatically "good".)
+                if key in ("section.hole_spread_pct",) and abs(d) >= 0.005:
                     cls = "good" if d < 0 else "bad"
+                else:
+                    cls = "flat"
                 parts.append(f"<td class='{cls}'>{d:+.2f}%</td>")
             parts.append("</tr>")
         parts.append("</table>")
-        parts.append("<div class='cap'>绿色＝相对基线降低，红色＝升高。降低不一定都是好事（如温度、应力需结合工艺判断）。</div>")
+        parts.append("<div class='cap'>只有孔间差按“越低越好”着色（绿＝改善，红＝变差）；其余指标只给变化百分比——温度、力、速度的升降是否有利要结合工艺判断。</div>")
 
     if images:
         parts.append("<h2>三、结果图</h2>")
