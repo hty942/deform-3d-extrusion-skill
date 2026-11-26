@@ -22,9 +22,9 @@
 | 仿真控制 | `Simulation Controls` → Main（Mode: Deformation / Heat transfer） |
 | 数据库生成 | `Database Generation` → Check Data / Generate DB |
 | 网格 | `Mesh → Generate Mesh`；`Mesh Density Windows` |
-| 材料 | `Material → Load from Library / Load from File` |
+| 材料 | `Material → Load from library` / `Load from file`（程序字符串：`Load from lib`、`load from file`） |
 | 对象定位 | `Object Positioning` |
-| 对象间关系 | `Inter-Object Relations` |
+| 对象间关系 | `Inter-Object`（对象间关系；程序字符串为 `Inter-Object`） |
 | 打开指定 DB | 主界面 `-m open -f <十六进制全路径>`（DEF_GUI_MO 用法） |
 
 ## 3. Database Generation 对话框
@@ -55,10 +55,11 @@
 | 变量图标 | 左侧竖排，从上到下：σT、红叉、温度计、D、V、U、σ、ε、ε̇ |
 | 播放 | 底部 Step View：◀\| 上一帧、\|▶ 下一帧、\|◀ 第一帧、▶\| 末帧、◀ 倒放、▶ 正放 |
 | 色标 | 视图右侧，Min/Max 在下方 |
+| 动画导出 | 程序里有 `Animation Export` / `Animation Setup`（AVI/WMV/PPT/HTML）；界面未逐项点开验证 |
 
 ## 6. 已验证的坑（都踩过）
 
-1. `Run (options) → Start` 在单机报 `Can not submit job!`；`Check Server` 会把 `SYS_SERVER_NAME` 写成 `none`。
+1. `Run (options) → Start` 在单机报 `Can not submit job!`；本机观察到点 `Check Server` 后 `SYS_SERVER_NAME` 变成 `none`（推断由它写入）。
 2. `DEF_ARM.COM` 没有 `64bit.dat` → 静默 32 位、1 秒退出。
 3. 求解中 `tr.DB` 改名 `FOR003`，此时打不开是正常的。
 4. 主窗口文件树不刷新：新建目录后看不到，重启或直接用 `-m open -f`。

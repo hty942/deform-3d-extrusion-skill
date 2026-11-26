@@ -27,11 +27,12 @@
 ### `Can not submit job!` / `Neither batch queue server nor simulation server is ready!`
 **原因**：用了 `Run (options)` 的 Start，单机没有批处理队列/共享点。
 **处理**：改用 `Simulation → Start`（F9）或 `DEF_ARM.COM <name> B`。
-**注意**：`Check Server` 会把 `SYS_SERVER_NAME` 写成 `none`，不要点。
+**注意**：本机观察到 `Check Server` 之后配置里 `SYS_SERVER_NAME = none`（推断是该按钮写入的），不要点。
 
 ### `There's an active job under current directory` / `FOR003.LOCK`
 **原因**：上一次求解异常退出，锁未释放。
-**处理**：确认求解进程已结束 → 删除 `FOR003.LOCK`、`DEFORM_RUNNING_JOB_STATUS.TXT`、`JobId`、`fort.53` → 若 DB 还被改名成 `FOR003`，改回 `<name>.DB`。
+**处理**：确认求解进程已结束 → 删除 `FOR003.LOCK`、`DEFORM_RUNNING_JOB_STATUS.TXT`、`JobId`、`fort.*`
+（常见 `fort.53`，也见过 `fort.5010`）→ 若 DB 还被改名成 `FOR003`，改回 `<name>.DB`。
 
 ### `Conflict: There is a running job with the same DB name`
 **原因**：残留的 job 状态文件。

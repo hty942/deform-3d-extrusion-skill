@@ -180,6 +180,11 @@ def main():
     t0 = time.time()
     data = parse(args.key, want_stress=not args.no_stress)
     nodes, vel, temp = data["nodes"], data["vel"], data["temp"]
+    empty_mesh = len(nodes) == 0
+    if empty_mesh:
+        print("WARNING: no RZ block found in %s" % args.key, file=sys.stderr)
+        print("         This is usually an export of a non-existent step "
+              "(DEF_PRE writes a ~2 KB skeleton KEY).", file=sys.stderr)
 
     result = {
         "file": os.path.abspath(args.key),
@@ -274,6 +279,8 @@ def main():
             for r in rows:
                 f.write(",".join(str(x) for x in r) + "\n")
         print("written", args.csv)
+
+    return 2 if empty_mesh else 0
 
 
 if __name__ == "__main__":

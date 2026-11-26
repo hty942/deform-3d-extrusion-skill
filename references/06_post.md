@@ -81,6 +81,10 @@ python scripts/key_metrics.py c10_out.KEY --z-exit -10 --tol 0.5 -o c10_metrics.
 
 KEY 中的块：`RZ`（节点坐标）、`URZ`（速度）、`NDTMP`（温度）、`ELMCON`（单元连接）、`STRAIN`（等效应变）、`STRESS`（应力张量 6 分量）。
 
+**步号必须真实存在**：给一个不存在的步号时，`DEF_PRE_64` 不会报错，而是写一个约 2 KB 的**空壳 KEY**（没有 `RZ` 块）。
+`export_db_key.ps1` 用"有没有 RZ 块"判定，遇到空壳会打印 FAILED 并退出 1；
+`key_metrics.py` 读到没有 RZ 的 KEY 会向 stderr 报警并退出 2。选步号前先在 Post 里看 Step 列表。
+
 ## 9. 动画
 
 ### 在软件内看（默认要求）
@@ -91,15 +95,18 @@ KEY 中的块：`RZ`（节点坐标）、`URZ`（速度）、`NDTMP`（温度）
 
 两条路：
 
-1. Post 内的动画保存（AVI/WMV/PPT），配置文件 `DEFORM3_SYS.INI` 里有 `SYS_ANIM_SAVE_AVI` 等开关；界面入口视版本而定，**本机未实测**。
+1. Post 自带动画导出：程序里有 `Animation Export` / `Animation Setup`，支持 AVI / WMV / PPT / HTML
+   （程序字符串核对：`AnimationSaveAVI`、`AnimationSaveWMV`、`AnimationSavePPT`、`AnimationSaveHTML`），
+   配置文件 `DEFORM3_SYS.INI` 中有 `SYS_ANIM_SAVE_*` 开关。**界面未逐项点开验证**。
 2. 逐帧截图 + 合成：
 
 ```powershell
 # 按固定视角逐帧截图（手动或脚本），命名 frame_0001.png ...
-.\scripts\frames_to_video.ps1 -Frames .\frames\frame_*.png -Fps 6 -Out .\anim.mp4
+.\scripts\frames_to_video.ps1 -FrameDir .\frames -Fps 6 -Out .\anim.mp4
 ```
 
-注意：截图前固定视角与色标范围，否则合成出来的动画会"闪"。
+注意：截图前固定视角与色标范围，否则合成出来的动画会"闪"；帧文件必须**连续编号**
+（`frame_0001.png`、`frame_0002.png`…），跳号会让 ffmpeg 中途报 "Could find no file"。
 
 ## 10. 常见问题
 

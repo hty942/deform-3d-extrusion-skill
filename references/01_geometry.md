@@ -15,6 +15,8 @@
 - STL 里只有坐标数字，**没有单位**。DEFORM 按算例单位制解释这些数字。
 - 算例选 **SI**（mm）时，坐标就按 mm 读；选 **English**（inch）时，同一份文件会缩小 25.4 倍。
 - 判定既有算例：`python scripts/read_key_unit.py <dir>`（看 `UNIT 1` = SI，`UNIT 2` = English）。
+- 注意：只含网格/几何的 KEY（如 `tr_002.KEY`、`FLDGEO.KEY`）**没有 UNIT 行**，脚本会给出"无法判定"而不是瞎猜——
+  这时以算例 DB/Pre 里的单位设置为准，或看同目录完整 KEY。
 - 判定几何：`python scripts/preflight_stl.py <file>` 看包围盒，和你图纸上的尺寸对一下就知道了。
 
 ## 3. 水密性（塑性体必须过）
@@ -23,6 +25,12 @@
 - 不水密的后果：四面体网格生成失败，或生成出破洞的网格，求解一开始就报接触/体积错误。
 - `preflight_stl.py` 会直接报边界边数量；>0 就必须回 CAD 修。
 - 修复办法：CAD 里做缝合/实体化后重新导出；或用 DEFORM 自带的几何修复工具（`Geo Tool`）。
+- `preflight_stl.py` 退出码：**0** = 全部通过，**2** = 有警告（如非水密/退化面），**1** = 没找到文件或参数错误。
+  CI/批处理里可以直接用退出码判断能不能进下一步。
+
+**现实例子（本机实测）**：DEFORM 自带的 `Extrusion_Example3_Die.STL` 用 `preflight_stl.py` 检查也是
+`not watertight - 0 boundary edge(s), 4 non-manifold edge(s)`。刚体件非水密不一定致命（它只提供接触面），
+但**塑性体和要划实体网格的模具必须水密**——别拿"厂商文件也不水密"当借口放过坯料。
 
 ## 4. 编码
 

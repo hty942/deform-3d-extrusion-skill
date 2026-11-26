@@ -69,6 +69,9 @@ description: 用 DEFORM-3D v11 完成金属塑性成形（挤压/锻造/镦粗�
 
 ## 6. 快速命令
 
+> 没有 `python` 命令的环境（Cherry 托管终端常见），把 `python` 换成
+> `uv run --no-project --python 3.12 python`。
+
 ```bash
 python scripts/preflight_stl.py <dir>
 python scripts/read_key_unit.py <dir>
@@ -78,7 +81,7 @@ python scripts/make_report.py -i baseline.json metrics.json -o report.html
 ```
 
 ```powershell
-.\scripts\export_db_key.ps1 -CaseDir <dir> -Db <name>.DB -Out <name>_out.KEY
+.\scripts\export_db_key.ps1 -CaseDir <dir> -Database <name>.DB -Out <name>_out.KEY -Step 1
 .\scripts\run_batch.ps1 -CaseDir <dir> -Name <name> -Wait
-.\scripts\frames_to_video.ps1 -Frames <dir>\*.png -Fps 6 -Out anim.mp4
+.\scripts\frames_to_video.ps1 -FrameDir <dir> -Fps 6 -Out anim.mp4
 ```

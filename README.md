@@ -10,6 +10,9 @@
 
 DEFORM v11 **没有建模 API**：新建算例、导几何、划网格、设边界条件只能在 Pre 图形界面里点。任何声称「丢一个 STL 进去就全自动出结果」的脚本，要么在骗人，要么是在做屏幕点击机器人（分辨率一变就废）。
 
+（v11 安装目录里确实有 Python 文件，但那是 2003–2004 年的 **FEM 队列提交客户端** `2D\COM\server_queue_fem\`，
+只负责任务排队，不碰建模；本机已核查。）
+
 > **版本补充（2026-11 核实）**：SFTC 自 **DEFORM V14.0** 起提供 **Python 版 DEFORM-API**，官方称已把"大部分核心功能"开放给 Python，明确可用于
 > "link DEFORM with CAD systems to automate the generation of simulation-ready geometries and meshes"、
 > 参数化建模、自定义后处理变量和结果自动提取；相关工具与文档放在 DEFORM 安装目录。
@@ -90,6 +93,15 @@ python scripts/make_report.py -i baseline.json c10_metrics.json -o report.html
 
 见 `references/07_optimization.md`：定指标 → 定基线 → 单因素或 L9 → 批量算例 → 指标对比 → 选优 → 复核。
 
+### 路径 D：换几何（最接近"模型 + 材料 → 结果"的自动化程度）
+
+1. 复制一个同类算例目录（几何结构、对象数一致）作为模板。
+2. Pre 里删旧几何 → `Geometry → Import` 新 STL → `Mesh → Generate Mesh`（这一步只能 GUI）。
+3. 材料：库内没有就用 `make_material.py` 生成 KEY，再 `Material → Load from file`。
+4. 之后全部脚本：`Database Generation`（一次 GUI）→ `run_batch.ps1` → `export_db_key.ps1` → `key_metrics.py` → `make_report.py`。
+
+这是 v11 上的现实上限：**两次 GUI 操作（划网格、生成 DB），其余全自动**。V14 起有 Python API，可再省掉这两步。
+
 ---
 
 ## 四、已验证环境
@@ -99,7 +111,22 @@ python scripts/make_report.py -i baseline.json c10_metrics.json -o report.html
 - Python 3.10+（脚本只用标准库）；视频合成需 ffmpeg
 - 本机若没有 `python` 命令（Cherry 托管环境常见），把命令里的 `python` 换成
   `uv run --no-project --python 3.12 python`，或先 `uv python install`
-- 本仓库所有脚本的「实测」结论均来自 423002 四孔模挤压算例（见 `examples/423002/`）
+- 本仓库脚本的「实测」结论主要来自 423002 四孔模挤压算例（见 `examples/423002/`），另有厂商 STL 预检、案例 1 批跑等专项验证（见下表）
+
+### 脚本实测状态（2026-11-26 复核）
+
+| 脚本 | 怎么测的 | 结果 |
+|---|---|---|
+| `preflight_stl.py` | 厂商 Extrusion_Example3 的 5 个 STL | 编码/面数/包围盒/水密全部识别；非水密 Die 报警，退出码 2 |
+| `read_key_unit.py` | dof_c1、anim\tr | dof_c1 判为 SI；tr 只有网格 KEY（无 UNIT）时明确说"无法判定"，不猜 |
+| `make_material.py` | 自建 Johnson-Cook 配置；再回读库里的 6061 材料 KEY | FSTRES 5×3×3 / 9×2×3 正确写出；物理检查通过 |
+| `key_metrics.py` | 284 MB 导出 KEY；空壳 KEY | 6 秒出全部指标；空壳（无 RZ）报警并退 2 |
+| `export_db_key.ps1` | 1.DB 初始步；dof_c1.DB 第 1 步 | 导出与既有 `dof_c1_out.KEY` **SHA256 完全一致**；不存在的步号会被 RZ 检查拦下 |
+| `run_batch.ps1` | 案例 1 实跑约 2 分钟 | 自动建 `64bit.dat`、64 位启动、步号监控正常；人为中止后正确报告退出码 |
+| `frames_to_video.ps1` | 3 帧 → MP4、GIF | 两种格式均成功 |
+| `make_report.py` | 单算例 / 双算例 / 10 张图 / 空算例 | HTML 正常生成与渲染 |
+
+**未实测**：一次完整求解到结束（数小时）、Brick 六面体网格、Post 内 Animation Export 的界面操作、Load-Stroke 图菜单。
 
 ---
 
@@ -116,7 +143,7 @@ python scripts/make_report.py -i baseline.json c10_metrics.json -o report.html
 | 出口速度 CV | 30.89% → 24.82% | 同上 |
 | 挤压力 | 5.176 → 5.769 MN | 截面应力积分口径（与 DEFORM 载荷口径 5.754 不同，勿混用） |
 
-**本仓库可复现的示例（`examples/423002/`）**：dof_c1，杆速 **3 mm/s**，截面取 z = −10（工作带内），
+**本仓库可复现的示例（`examples/423002/`）**：dof_c1，杆速 **3 mm/s**，截面取 z = −10（模具出口段附近，出口面 z = −18），
 由 `key_metrics.py` 从 284 MB 导出 KEY 计算：出口截面速度均值 99.74 mm/s、孔间差 10.00%。
 与上表口径不同（速度、截面位置都不一样），**不要混用**；详见该目录 README。
 

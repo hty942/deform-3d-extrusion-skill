@@ -37,7 +37,12 @@ $ErrorActionPreference = "Stop"
 
 $caseDirFull = (Resolve-Path $CaseDir).Path
 $dbFull = Join-Path $caseDirFull $Database
-if (-not (Test-Path $dbFull)) { throw "DB not found: $dbFull" }
+if (-not (Test-Path $dbFull)) {
+  if (Test-Path (Join-Path $caseDirFull "FOR003")) {
+    throw "DB not found: $dbFull (FOR003 exists - a run is in progress or was killed; restore FOR003 first)"
+  }
+  throw "DB not found: $dbFull"
+}
 
 $pre = Join-Path $DeformRoot "DEF_PRE_64.exe"
 if (-not (Test-Path $pre)) { throw "DEF_PRE_64.exe not found: $pre" }
@@ -70,12 +75,28 @@ $p = Start-Process -FilePath $pre -WorkingDirectory $caseDirFull `
   -NoNewWindow -PassThru -Wait
 
 Write-Host "DEF_PRE_64 exit code: $($p.ExitCode)"
+
+# A nonexistent step does NOT fail: DEF_PRE_64 still writes a ~2 KB skeleton KEY
+# with no mesh. So "file exists" is not enough - require an RZ block.
+$hasRz = $false
 if (Test-Path $outFull) {
+  $sr = New-Object IO.StreamReader($outFull)
+  try {
+    for ($i = 0; $i -lt 5000 -and -not $sr.EndOfStream; $i++) {
+      if ($sr.ReadLine() -match '^RZ\s') { $hasRz = $true; break }
+    }
+  } finally { $sr.Close() }
+}
+
+if ($hasRz) {
   $mb = [math]::Round((Get-Item $outFull).Length / 1MB, 1)
   Write-Host "OK: $outFull ($mb MB)"
   Write-Host "Menu log: $tmpLog"
 } else {
-  Write-Host "FAILED: output KEY not created. Menu log below:"
+  Write-Host "FAILED: no RZ block in the exported KEY."
+  Write-Host "Most likely step $Step does not exist in this database."
+  Write-Host "Open the database in Post, read the Step list, and pass an existing step with -Step."
+  Write-Host "Menu log below:"
   Get-Content $tmpLog -Tail 40
   exit 1
 }

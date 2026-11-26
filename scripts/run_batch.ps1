@@ -30,7 +30,12 @@ $arm = Join-Path $DeformRoot "3D\DEF_ARM.COM"
 if (-not (Test-Path $arm)) { throw "DEF_ARM.COM not found: $arm" }
 
 $db = Join-Path $dir "$Name.DB"
-if (-not (Test-Path $db)) { throw "DB not found: $db" }
+if (-not (Test-Path $db)) {
+  if (Test-Path (Join-Path $dir "FOR003")) {
+    throw "DB not found: $db (FOR003 exists - a run is in progress or was killed; restore FOR003 to $Name.DB first)"
+  }
+  throw "DB not found: $db"
+}
 
 $marker = Join-Path $dir "64bit.dat"
 if (-not (Test-Path $marker)) {

@@ -17,7 +17,8 @@
 | **Run (options) → Start** | 主界面右侧 `Run (options)` | 是（批处理队列 + 共享点） | 单机没配时只报 `Can not submit job!` / `Neither batch queue server nor simulation server is ready!` |
 | **批处理** | `3D\DEF_ARM.COM <name> B` | 否 | 可用；目录里必须有空文件 `64bit.dat` |
 
-> `Run (options)` 里的 `Check Server` 在没配服务器时会把 `SYS_SERVER_NAME` 写成 `none`，反而把界面搞坏。**不要点它。**
+> `Run (options)` 里的 `Check Server` 在没配服务器时会把配置写成 `SYS_SERVER_NAME = none`（本机观察，推断由该按钮写入），
+> 之后即使服务器可用也不会自动恢复。**不要点它。**
 
 ## 3. 64 位陷阱
 
@@ -41,6 +42,13 @@ Get-Content <name>.MSG -Tail 20
 正常特征：步数稳定推进；重划次数远小于步数。
 异常特征：`PROGRAM STOPPED FOR REMESHING!` 连续出现且行程几乎不前进 → 网格问题，见 `09_troubleshooting.md`。
 
+**时序细节（实测）**：`UPDATED TIME/STROKE` 只在每个 Run（含重划后的新 Run）结束时写入 `.LOG`；
+正在算的那一步内，只能从 `.MSG` 的 `STEP NUMBER` 看进度。批处理监控脚本的 time/stroke 列在步内会显示为空，这是正常的。
+
+**别被旧日志骗了**：`<name>.LOG` 在本次 Run 结束前可能仍然是上一次运行的内容（本机实测：新 64 位运行已经开始、`.MSG` 在推进，
+`.LOG` 末尾还留着上一次 `Running 32bit simulation` 的记录）。判断"这次到底跑没跑起来"，看
+`DEF_SIM_64.EXE` 是否在进程里、`.MSG` 的步号是否前进，而不是只看 LOG 首尾。
+
 ## 5. 中止与恢复
 
 - GUI：`Simulation → Stop`（F10）；主界面显示 `Aborting <name>`。
@@ -58,6 +66,6 @@ Get-Content <name>.MSG -Tail 20
 
 ## 7. 时间预期（本机实测，16 GB）
 
-- 19 万单元瞬态、含传热：约 40 s/步（含温度迭代），13 步 + 5 次重划 ≈ 26 分钟。
+- 19 万单元瞬态、含传热：FEM 总耗时 21 分 24 秒、推进 14 步，约 **90 s/步**（含温度迭代）；加 5 次重划（4 分 37 秒），全程约 26 分钟。
 - 61 万单元稳态 ALE：分钟级到十几分钟（视迭代）。
 - 加密到 60 万单元的瞬态：预计 1～2 分钟/步，跑 100 步要数小时——排计划时按这个量级估。
